@@ -54,6 +54,7 @@ print OUT "Total $key[$_],$val[$_]\n" for 0..$#key;
 print OUT "Threads,$ncpu\n"; 
 print OUT "Scalability,$scal->{_total}\n"; 
 
+say "Perlbrew compilation...";
 my $t = Time::HiRes::clock_gettime(CLOCK_MONOTONIC);
 system qq{
   bash -c '
@@ -70,13 +71,16 @@ system qq{
     perlbrew uninstall perl-5.36.0
 };
 
+say "Phoronix 7zip...";
 my $out = `phoronix-test-suite batch-benchmark compress-7zip`;
 my @avg = ($out =~ /Average:\s+(\d+)\s+MIPS/g);
 print OUT "7Zip Compress,$avg[0]\n7Zip Decompress,$avg[1]\n";
+say "Phoronix OpenSSL...";
 $out = `echo 1|phoronix-test-suite batch-benchmark openssl`;
 @avg = ($out =~ /Average:\s+(\S+)\s+sign/g);
 print OUT "OpenSSL RSA4096 sign/s,$avg[0]\n";
 
+say "FFmpeg bench...";
 $t = Time::HiRes::clock_gettime(CLOCK_MONOTONIC);
 system "ffmpeg -i /root/big_buck_bunny_720p_h264.mov -c:v libx264 -threads 1 out264a.mp4";
 $t = Time::HiRes::clock_gettime(CLOCK_MONOTONIC)-$t;
@@ -88,7 +92,7 @@ print OUT "FFmpeg Multi,$t\n";
 
 close OUT;
 
-system $arch eq 'arm64' ? "Geekbench-5.4.0-LinuxARMPreview/geekbench5" : "Geekbench-5.4.4-Linux/geekbench5"
+system $arch eq 'arm64' ? "/root/Geekbench-5.4.0-LinuxARMPreview/geekbench5" : "/root/Geekbench-5.4.4-Linux/geekbench5"
     if $opt{geekbench};
 
 sub _calc {
