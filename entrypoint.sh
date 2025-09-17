@@ -6,8 +6,8 @@ echo
 /root/bench.pl -g
 
 echo
-echo "Results in /root/bench.csv"
 echo "You can rerun with /root/bench.pl"
-
+echo "(option -g to rerun Geekbench)"
+echo
 
 exec "$@"

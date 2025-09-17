@@ -5,8 +5,7 @@ RUN apt-get update && apt-get install -y wget build-essential cpanminus \
     libjpeg-dev php-cli php-xml php-zip autoconf p7zip-full mesa-utils vulkan-tools \
     unzip apt-file curl
 
-RUN cpanm -n Benchmark::DKbench
-RUN setup_dkbench --force
+RUN cpanm -n Benchmark::DKbench && setup_dkbench --force && rm -rf /root/.cpanm/work
 
 RUN wget https://phoronix-test-suite.com/releases/phoronix-test-suite-10.8.4.tar.gz && \
     tar xvfz phoronix-test-suite-10.8.4.tar.gz && \
@@ -43,8 +42,6 @@ RUN set -e && \
         tar xvfz Geekbench-5.4.4-Linux.tar.gz && \
         rm Geekbench-5.4.4-Linux.tar.gz; \
     fi
-
-RUN cd /root && wget https://download.blender.org/peach/bigbuckbunny_movies/big_buck_bunny_720p_h264.mov
 
 COPY bench.pl /root/bench.pl
 
