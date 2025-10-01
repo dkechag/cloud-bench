@@ -14,8 +14,8 @@ RUN wget https://phoronix-test-suite.com/releases/phoronix-test-suite-10.8.4.tar
 
 # Preconfigure batch mode for unattended runs
 RUN printf "Y\nN\nN\nN\nN\nN\nN\n" | phoronix-test-suite batch-setup
-RUN phoronix-test-suite install openssl
-RUN phoronix-test-suite install compress-7zip
+# Does not actually work
+# RUN phoronix-test-suite batch-install openssl compress-7zip nginx
 
 RUN bash -c ' \
   set -e && \

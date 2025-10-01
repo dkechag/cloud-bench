@@ -21,6 +21,13 @@ GetOptions(
     'out=s',
     'iter|i=i'
 );
+my $name = System::CPU::get_name();
+my $ncpu = System::CPU::get_ncpu();
+my $arch = `uname -m`;
+chomp($arch);
+$arch = 'amd64' if $arch eq 'x86_64';
+$arch = 'arm64' if $arch eq 'aarch64';
+say "Benchmarking $name ($arch) x $ncpu threads";
 
 my ($stats, $stats_multi, $scal) = suite_calc({
         iter    => $opt{iter},
@@ -29,15 +36,8 @@ my ($stats, $stats_multi, $scal) = suite_calc({
 
 open OUT, ">$opt{out}";
 
-my $arch = `uname -m`;
-chomp($arch);
-$arch = 'amd64' if $arch eq 'x86_64';
-$arch = 'arm64' if $arch eq 'aarch64';
-my $ncpu   = $stats_multi->{_opt}->{threads};
 my $single = "DKbench Single Core\n";
 my $multi  = "DKbench Multi Core\n";
-my $name   = System::CPU::get_name();
-say "Benchmarking $name - $ncpu threads";
 
 foreach my $key (sort keys $stats->%*) {
     next if $key =~ /^_/;
@@ -74,7 +74,7 @@ system qq{
   bash -c '
     set -e
     source /root/perl5/perlbrew/etc/bashrc
-    perlbrew uninstall perl-5.36.0'
+    echo y|perlbrew uninstall perl-5.36.0'
 };
 
 say "Phoronix 7zip...";
@@ -85,6 +85,10 @@ say "Phoronix OpenSSL...";
 $out = tee_stdout { system "echo 1|phoronix-test-suite batch-benchmark openssl" };
 @avg = ($out =~ /Average:\s+(\S+)\s+sign/g);
 print OUT "OpenSSL RSA4096 sign/s,$avg[0]\n";
+say "Phoronix nginx...";
+$out = tee_stdout { system "echo 3|phoronix-test-suite batch-benchmark nginx" };
+@avg = ($out =~ /Average:\s+(\S+)\s+Req/g);
+print OUT "nginx 100c req/s,$avg[0]\n";
 
 say "FFmpeg bench...";
 my $vid = "/root/big_buck_bunny_720p_h264.mov";
@@ -99,6 +103,7 @@ $t = Time::HiRes::clock_gettime(CLOCK_MONOTONIC);
 system "ffmpeg -i $vid -c:v libx264 -threads $ncpu out264b.mp4";
 $t = Time::HiRes::clock_gettime(CLOCK_MONOTONIC)-$t;
 print OUT "FFmpeg Multi,$t\n";
+system "rm -rf out264*";
 
 if ($opt{geekbench}) {
     my $folder = $arch eq 'arm64' ? 'Geekbench-5.4.0-LinuxARMPreview' : 'Geekbench-5.4.4-Linux';
